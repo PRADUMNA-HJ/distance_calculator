@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate OpenAPI exists
+        run: test -f contracts/openapi.yaml
+
+  service-syntax-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - services/api_gateway
+          - services/auth_service
+          - services/annotation_service
+          - services/inference_orchestrator
+          - services/model_service
+          - services/dataset_service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r ${{ matrix.service }}/requirements.txt
+      - name: Syntax check
+        run: |
+          python -m py_compile ${{ matrix.service }}/app/main.py
+          find ${{ matrix.service }}/app -name "*.py" -type f -exec python -m py_compile {} \;
+
+  service-unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - services/api_gateway
+          - services/auth_service
+          - services/annotation_service
+          - services/inference_orchestrator
+          - services/model_service
+          - services/dataset_service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: |
+          pip install -r ${{ matrix.service }}/requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run unit tests
+        run: |
+          cd ${{ matrix.service }}
+          pytest tests -q
+
+  backend-file-size-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Enforce backend line limit
+        run: python scripts/check_backend_file_lines.py

@@ -1,0 +1,2 @@
+image_id,image_uri,mark_type,box_x,box_y,box_width,box_height,polygon_points_json,true_distance_cm,source,captured_at
+sample_0001,images/sample_0001.jpg,box,120,140,200,180,,82.5,mobile-camera,2026-04-19T09:00:00Z

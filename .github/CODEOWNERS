@@ -1,0 +1,21 @@
+# CODEOWNERS
+# Replace GitHub usernames after account setup.
+
+# Core contracts and architecture: both reviewers required manually
+/contracts/* @PRADUMNA-HJ @friend-github-username
+/shared/schemas/* @PRADUMNA-HJ @friend-github-username
+/docs/* @PRADUMNA-HJ @friend-github-username
+
+# Your ownership
+/web/* @PRADUMNA-HJ
+/mobile/* @PRADUMNA-HJ
+/services/api_gateway/* @PRADUMNA-HJ
+/services/annotation_service/* @PRADUMNA-HJ
+
+# Friend ownership
+/ml/* @friend-github-username
+/services/model_service/* @friend-github-username
+/services/dataset_service/* @friend-github-username
+
+# Shared service
+/services/inference_orchestrator/* @PRADUMNA-HJ @friend-github-username

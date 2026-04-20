@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Distance Calculator Gateway API
+  version: 1.0.0
+  description: Centralized API gateway contract for microservices-based distance platform.
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /health:
+    get:
+      summary: Gateway health check
+      responses:
+        "200":
+          description: Gateway is alive
+
+  /v1/annotations:
+    post:
+      summary: Store annotation with known true distance
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnotationPayload"
+      responses:
+        "201":
+          description: Annotation stored by annotation service
+
+  /v1/predict-distance:
+    post:
+      summary: Predict object distance from image and object region
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictRequest"
+      responses:
+        "200":
+          description: Prediction success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictResponse"
+
+  /v1/dataset/ingest:
+    post:
+      summary: Register dataset ingestion job
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatasetIngestPayload"
+      responses:
+        "200":
+          description: Ingestion job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+
+  /v1/models/active:
+    get:
+      summary: Get active model metadata
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Active model info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelInfo"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    Point:
+      type: object
+      properties:
+        x:
+          type: number
+          format: float
+        y:
+          type: number
+          format: float
+      required: [x, y]
+
+    BoundingBox:
+      type: object
+      properties:
+        x:
+          type: number
+          format: float
+        y:
+          type: number
+          format: float
+        width:
+          type: number
+          format: float
+        height:
+          type: number
+          format: float
+      required: [x, y, width, height]
+
+    AnnotationPayload:
+      type: object
+      properties:
+        image_id:
+          type: string
+        image_uri:
+          type: string
+        mark_type:
+          type: string
+          enum: [box, circle, polygon]
+        box:
+          $ref: "#/components/schemas/BoundingBox"
+        polygon:
+          type: array
+          items:
+            $ref: "#/components/schemas/Point"
+        true_distance_cm:
+          type: number
+          format: float
+        source:
+          type: string
+          enum: [kaggle, mobile-camera]
+        captured_at:
+          type: string
+          format: date-time
+      required:
+        - image_id
+        - image_uri
+        - mark_type
+        - true_distance_cm
+        - source
+
+    PredictRequest:
+      type: object
+      properties:
+        image_uri:
+          type: string
+        mark_type:
+          type: string
+          enum: [box, circle, polygon]
+        box:
+          $ref: "#/components/schemas/BoundingBox"
+        polygon:
+          type: array
+          items:
+            $ref: "#/components/schemas/Point"
+      required: [image_uri, mark_type]
+
+    PredictResponse:
+      type: object
+      properties:
+        distance_cm:
+          type: number
+          format: float
+        confidence:
+          type: number
+          format: float
+        model_version:
+          type: string
+        label_position:
+          $ref: "#/components/schemas/Point"
+      required: [distance_cm, confidence, model_version]
+
+    ModelInfo:
+      type: object
+      properties:
+        model_name:
+          type: string
+        model_version:
+          type: string
+        trained_on:
+          type: string
+          format: date-time
+      required: [model_name, model_version]
+
+    DatasetIngestPayload:
+      type: object
+      properties:
+        source:
+          type: string
+          enum: [kaggle, mobile-camera]
+        dataset_name:
+          type: string
+        version:
+          type: string
+        records:
+          type: integer
+        notes:
+          type: string
+      required: [source, dataset_name, version, records]
+
+    IngestResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        job_id:
+          type: string
+      required: [message, job_id]

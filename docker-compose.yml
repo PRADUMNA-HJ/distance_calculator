@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build: ./services/api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8001
+      ANNOTATION_SERVICE_URL: http://annotation-service:8002
+      INFERENCE_SERVICE_URL: http://inference-orchestrator:8003
+      DATASET_SERVICE_URL: http://dataset-service:8005
+    depends_on:
+      - auth-service
+      - annotation-service
+      - inference-orchestrator
+      - dataset-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./services/auth_service
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  annotation-service:
+    build: ./services/annotation_service
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  inference-orchestrator:
+    build: ./services/inference_orchestrator
+    ports:
+      - "8003:8003"
+    environment:
+      MODEL_SERVICE_URL: http://model-service:8004
+    depends_on:
+      - model-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  model-service:
+    build: ./services/model_service
+    ports:
+      - "8004:8004"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  dataset-service:
+    build: ./services/dataset_service
+    ports:
+      - "8005:8005"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5

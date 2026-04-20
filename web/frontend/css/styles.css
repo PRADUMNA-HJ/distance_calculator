@@ -1,0 +1,46 @@
+:root {
+  --bg: #f7f7ef;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --accent: #0a7c66;
+  --border: #d6dde3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, #f7f7ef 0%, #eef3f6 100%);
+}
+
+.app-shell {
+  max-width: 860px;
+  margin: 32px auto;
+  padding: 16px;
+}
+
+.hero {
+  margin-bottom: 20px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+button {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}

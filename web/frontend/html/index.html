@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distance Calculator Frontend</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <h1>Distance Calculator</h1>
+      <p>Frontend module for image marking and distance prediction.</p>
+    </header>
+
+    <section class="panel">
+      <h2>Upload Image</h2>
+      <input id="imageInput" type="file" accept="image/*">
+      <button id="predictBtn">Predict Distance</button>
+    </section>
+
+    <section class="panel">
+      <h2>Result</h2>
+      <p id="resultText">No prediction yet.</p>
+    </section>
+  </main>
+
+  <script src="../javascript/app.js"></script>
+</body>
+</html>
