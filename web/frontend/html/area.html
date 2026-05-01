@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distance Calculator | Area</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-page="measurement" data-route="area" data-mode="area">
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="page-shell">
+    <nav class="top-nav">
+      <div class="nav-left">
+        <button id="backBtn" class="back-btn" type="button" title="Go back">← Back</button>
+        <div class="brand-block">
+          <div class="brand-mark">AI</div>
+          <div>
+            <p>Distance Calculator</p>
+            <span>Platform</span>
+          </div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link" data-route="dashboard" href="dashboard.html">Home</a>
+        <a class="nav-link" data-route="distance" href="distance.html">Distance</a>
+        <a class="nav-link" data-route="area" href="area.html">Area</a>
+      </div>
+      <div class="nav-right">
+        <a class="nav-link" data-route="login" href="login.html">Login</a>
+        <button id="themeToggle" class="theme-toggle" type="button">Night Mode</button>
+      </div>
+    </nav>
+
+    <section class="hero hero-banner panel">
+      <div>
+        <p class="eyebrow">Area</p>
+        <h1 id="measurementTitle">Area measurement workspace</h1>
+        <p class="hero-copy">Use the same gateway session to run area-focused requests and keep your capture, annotation, and backend flow separated from distance.</p>
+      </div>
+      <div id="measurementModeBadge" class="hero-side-chip">Area</div>
+    </section>
+
+    <section class="measurement-layout">
+      <article class="panel">
+        <h2>Request Builder</h2>
+        <div class="form-stack">
+          <div class="field-wrap">
+            <label for="gatewayUrl">Gateway URL</label>
+            <input id="gatewayUrl" type="text" value="http://localhost:8000">
+          </div>
+          <div class="field-wrap">
+            <label for="apiKeyInput">API Key</label>
+            <input id="apiKeyInput" type="text" value="dev-gateway-key">
+          </div>
+          <div class="field-wrap">
+            <label for="authTokenInput">Bearer Token</label>
+            <input id="authTokenInput" type="text" value="demo-token">
+          </div>
+          <div class="field-wrap">
+            <label for="requestIdInput">Request ID</label>
+            <div class="inline-row">
+              <input id="requestIdInput" type="text" placeholder="Auto-generated request id">
+              <button id="regenRequestIdBtn" class="ghost-btn inline-btn" type="button">New ID</button>
+            </div>
+          </div>
+          <div class="field-wrap">
+            <label for="imageInput">Image upload</label>
+            <input id="imageInput" type="file" accept="image/*">
+          </div>
+          <div class="preview-card" id="previewCard">
+            <img id="previewImage" class="preview-image" alt="Selected preview" hidden>
+            <p id="previewMeta" class="preview-meta">No image selected yet.</p>
+          </div>
+          <div class="field-wrap">
+            <label for="imageUriInput">Image URI</label>
+            <input id="imageUriInput" type="text" value="images/area-demo.jpg">
+          </div>
+          <div class="field-wrap">
+            <label for="targetObjectInput">Object / Scene Label</label>
+            <input id="targetObjectInput" type="text" value="plot of land" placeholder="plot of land, field, room">
+          </div>
+          <div class="field-grid cols-2">
+            <div class="field-wrap">
+              <label for="trueDistanceInput">True Distance (cm)</label>
+              <input id="trueDistanceInput" type="number" min="1" step="0.1" value="85">
+            </div>
+            <div class="field-wrap">
+              <label for="sourceInput">Source</label>
+              <input id="sourceInput" type="text" value="mobile-camera">
+            </div>
+          </div>
+          <div class="field-grid cols-2">
+            <div class="field-wrap">
+              <label for="markTypeInput">Mark Type</label>
+              <select id="markTypeInput">
+                <option value="box" selected>Box</option>
+                <option value="polygon">Polygon</option>
+              </select>
+            </div>
+            <div class="field-wrap">
+              <label for="polygonJsonInput">Polygon JSON</label>
+              <input id="polygonJsonInput" type="text" value='[{"x":100,"y":80},{"x":360,"y":90},{"x":340,"y":250}]'>
+            </div>
+          </div>
+          <div class="field-grid cols-4">
+            <div class="field-wrap"><label for="boxXInput">Box X</label><input id="boxXInput" type="number" value="120"></div>
+            <div class="field-wrap"><label for="boxYInput">Box Y</label><input id="boxYInput" type="number" value="90"></div>
+            <div class="field-wrap"><label for="boxWidthInput">Width</label><input id="boxWidthInput" type="number" value="240"></div>
+            <div class="field-wrap"><label for="boxHeightInput">Height</label><input id="boxHeightInput" type="number" value="180"></div>
+          </div>
+          <div class="field-wrap">
+            <label for="datasetNameInput">Dataset Name</label>
+            <input id="datasetNameInput" type="text" value="area-training-set" placeholder="e.g., area-training-set">
+          </div>
+          <div class="field-grid cols-3">
+            <div class="field-wrap">
+              <label for="datasetVersionInput">Version</label>
+              <input id="datasetVersionInput" type="text" value="1.0.0">
+            </div>
+            <div class="field-wrap">
+              <label for="datasetRecordsInput">Records</label>
+              <input id="datasetRecordsInput" type="number" min="1" value="100">
+            </div>
+            <div class="field-wrap">
+              <label for="datasetNotesInput">Notes</label>
+              <input id="datasetNotesInput" type="text" placeholder="e.g., Aerial shots of various terrain">
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="predictDistanceBtn" class="ghost-btn" type="button">Predict Distance</button>
+            <button id="predictAreaBtn" class="primary-btn is-active" type="button">Predict Area</button>
+            <button id="saveAnnotationBtn" class="ghost-btn" type="button">Save Annotation</button>
+          </div>
+          <button id="ingestDatasetBtn" class="ghost-btn" type="button">Ingest Dataset</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Annotation Tools</h2>
+        <div class="annotation-toolbar">
+          <button id="toolBoxBtn" class="tool-btn is-active" type="button" title="Box tool">Box</button>
+          <button id="toolCircleBtn" class="tool-btn" type="button" title="Circle tool">Circle</button>
+          <button id="toolPolygonBtn" class="tool-btn" type="button" title="Polygon tool">Polygon</button>
+        </div>
+        <div class="annotation-toolbar">
+          <button id="finalizePolygonBtn" class="tool-btn" type="button" title="Finalize polygon">Finalize Polygon</button>
+          <button id="clearAnnotationBtn" class="tool-btn" type="button" title="Clear annotation">Clear</button>
+        </div>
+        <div class="annotation-canvas-wrap">
+          <canvas id="annotationCanvas" class="annotation-canvas"></canvas>
+        </div>
+        <div class="annotation-actions">
+          <p id="annotationMeta" class="annotation-meta">No annotation yet.</p>
+          <p id="labelMeta" class="annotation-meta">Label position: not available</p>
+        </div>
+      </article>
+
+      <article class="panel result-panel">
+        <h2>Result</h2>
+        <p id="resultText" class="result-text">No prediction yet.</p>
+        <div class="summary-list">
+          <div class="summary-row"><span>Request</span><strong id="requestMeta">Request ID not sent yet</strong></div>
+          <div class="summary-row"><span>Mode</span><strong>Area</strong></div>
+          <div class="summary-row"><span>Tip</span><strong>Area mode uses the same backend route with analysis_mode=area</strong></div>
+        </div>
+        <a class="ghost-btn page-link-btn" href="distance.html">Open Distance Page</a>
+      </article>
+    </section>
+
+    <div id="splashScreen" class="splash-screen">
+      <div class="splash-container">
+        <div class="splash-logo">
+          <div class="brand-mark">AI</div>
+          <h1>Distance Calculator</h1>
+        </div>
+        <div class="splash-progress-container">
+          <div id="splashProgress" class="splash-progress-bar"></div>
+        </div>
+        <p id="splashPercent" class="splash-percent">0%</p>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
+  <script src="../javascript/site.js"></script>
+  <script src="../javascript/app.js"></script>
+</body>
+</html>

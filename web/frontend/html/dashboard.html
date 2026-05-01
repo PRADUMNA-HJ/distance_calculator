@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distance Calculator | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-page="dashboard" data-route="dashboard">
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="page-shell">
+    <nav class="top-nav">
+      <div class="nav-left">
+        <button id="backBtn" class="back-btn" type="button" title="Go back" style="display: none;">← Back</button>
+        <div class="brand-block">
+          <div class="brand-mark">AI</div>
+          <div>
+            <p>Distance Calculator</p>
+            <span>Platform</span>
+          </div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link" data-route="dashboard" href="dashboard.html">Home</a>
+        <a class="nav-link" data-route="distance" href="distance.html">Distance</a>
+        <a class="nav-link" data-route="area" href="area.html">Area</a>
+      </div>
+      <div class="nav-right">
+        <a class="nav-link" data-route="login" href="login.html">Login</a>
+        <button id="themeToggle" class="theme-toggle" type="button">Night Mode</button>
+      </div>
+    </nav>
+
+    <section class="hero hero-banner panel">
+      <div>
+        <p class="eyebrow">Welcome</p>
+        <h1>Distance & Area Calculation Platform</h1>
+        <p class="hero-copy">A production-grade, AI-powered measurement platform for precise distance and area estimation from images. Capture, annotate, predict, and train with enterprise-ready microservices architecture.</p>
+      </div>
+      <div id="sessionChip" class="hero-side-chip">Not signed in</div>
+    </section>
+
+    <section class="page-grid dashboard-full-width">
+      <article class="panel panel-full">
+        <h2>Platform Overview</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>🎯 Product Scope</h3>
+            <ul class="info-list">
+              <li>Capture images from mobile or web camera</li>
+              <li>Mark object regions with box, circle, or polygon tools</li>
+              <li>Predict object distance and area using AI</li>
+              <li>Render distance/area labels on images</li>
+              <li>Feed validated samples back to training pipeline</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h3>🏗️ Architecture</h3>
+            <ul class="info-list">
+              <li><strong>API Gateway:</strong> Centralized request routing</li>
+              <li><strong>Inference Orchestrator:</strong> Model prediction coordination</li>
+              <li><strong>Model Service:</strong> Distance/area estimation engine</li>
+              <li><strong>Annotation Service:</strong> Storage and retrieval of labeled data</li>
+              <li><strong>Dataset Service:</strong> Training data pipeline management</li>
+              <li><strong>Auth Service:</strong> Token-based authentication</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h3>⚙️ Technology Stack</h3>
+            <ul class="info-list">
+              <li><strong>Backend:</strong> FastAPI, Python, microservices</li>
+              <li><strong>Frontend:</strong> HTML5 Canvas, Vanilla JavaScript</li>
+              <li><strong>ML:</strong> Baseline model training & evaluation</li>
+              <li><strong>DevOps:</strong> Docker, docker-compose, CI/CD ready</li>
+              <li><strong>API:</strong> OpenAPI/Swagger contract-first design</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="page-grid dashboard-grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Backend status</h2>
+          <button id="refreshDashboardBtn" class="ghost-btn" type="button">Refresh</button>
+        </div>
+        <p id="dashboardStatusText" class="result-text">Checking gateway and services...</p>
+        <div id="dashboardStatusList" class="status-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>Session</h2>
+        <div class="summary-list">
+          <div class="summary-row"><span>Gateway</span><strong id="dashboardGateway">http://localhost:8000</strong></div>
+          <div class="summary-row"><span>Auth</span><strong id="dashboardAuth">No token saved</strong></div>
+          <div class="summary-row"><span>Token</span><strong id="dashboardToken">demo-token</strong></div>
+        </div>
+        <div class="action-row">
+          <a class="primary-btn page-link-btn" href="login.html">Login</a>
+          <a class="ghost-btn page-link-btn" href="distance.html">Distance</a>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Quick Start</h2>
+        <div class="route-card-list">
+          <a class="route-card" href="distance.html">
+            <strong>Distance Measurement</strong>
+            <span>Predict object distance from images with custom annotations.</span>
+          </a>
+          <a class="route-card" href="area.html">
+            <strong>Area Calculation</strong>
+            <span>Measure land/object areas using polygon or box annotations.</span>
+          </a>
+          <a class="route-card" href="login.html">
+            <strong>Authentication</strong>
+            <span>Get a bearer token to use protected API endpoints.</span>
+          </a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
+  <script src="../javascript/site.js"></script>
+</body>
+</html>
