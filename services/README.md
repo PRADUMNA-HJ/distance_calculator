@@ -25,6 +25,12 @@ From repository root:
 2. pytest tests/integration -q
 3. docker compose down
 
+Integration tests expect the compose stack to be reachable on `http://localhost:8000` and use these defaults when headers are not provided:
+- `INTEGRATION_API_KEY=dev-gateway-key`
+- `INTEGRATION_AUTH_TOKEN=demo-token`
+
+If the stack is not running, the tests skip with a clear unavailable-stack message.
+
 ## Debugging Principle
 Always debug at service boundary first:
 1. Check service health endpoint.

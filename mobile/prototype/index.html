@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Distance Vision Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@500;700;800;900&family=Sora:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div class="scan-grid"></div>
+
+  <main class="app-shell">
+    <nav class="floating-nav">
+      <div class="brand-chip">
+        <span class="brand-mark">AI</span>
+        <div>
+          <p>Distance Vision</p>
+          <span>Measure with AI Precision</span>
+        </div>
+      </div>
+      <div class="nav-pills">
+        <a href="#home" data-nav="home" class="nav-pill active">Home</a>
+        <a href="#demo" data-nav="demo" class="nav-pill">Demo</a>
+        <a href="#docs" data-nav="docs" class="nav-pill">Docs</a>
+      </div>
+    </nav>
+
+    <section id="home" class="panel hero-panel reveal">
+      <p class="eyebrow">AI Measurement Platform</p>
+      <h1>Measure the Real World with AI Precision.</h1>
+      <p class="hero-copy">A futuristic mobile experience for camera capture, object marking, bounding shapes, and real-time distance labels with premium HUD overlays.</p>
+
+      <div class="cta-row">
+        <button class="cta primary" id="launchCameraBtn">Launch Camera</button>
+        <a href="#demo" class="cta secondary">Try Demo</a>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-card-head">
+          <div>
+            <p class="tiny-label">Camera scanner online</p>
+            <h2>Live AI frame</h2>
+          </div>
+          <span class="status-chip online">Live</span>
+        </div>
+
+        <div class="scanner-stage">
+          <div class="scan-line"></div>
+          <div class="reticle"></div>
+          <div class="target-chip target-left">Target locked</div>
+          <div class="target-chip target-right">Distance 4.2m</div>
+          <div class="floating-card floating-top">+32 annotations</div>
+          <div class="floating-card floating-bottom">Label above / side</div>
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <article class="metric-card"><strong>98.4%</strong><span>visual confidence</span></article>
+        <article class="metric-card"><strong>12ms</strong><span>overlay response</span></article>
+        <article class="metric-card"><strong>24/7</strong><span>AI monitoring</span></article>
+      </div>
+    </section>
+
+    <section class="panel feature-panel reveal delay-1" id="features">
+      <div class="section-head">
+        <p class="tiny-label">Feature set</p>
+        <h2>Built like a luxury sci-fi product</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="icon">◉</span>
+          <h3>Camera Capture</h3>
+          <p>Open camera or upload an image with a premium glass preview shell.</p>
+        </article>
+        <article class="feature-card">
+          <span class="icon">⌁</span>
+          <h3>Draw & Mark Objects</h3>
+          <p>Tap points, trace boxes, and sketch polygons on a responsive mobile canvas.</p>
+        </article>
+        <article class="feature-card">
+          <span class="icon">⬚</span>
+          <h3>AI Distance Estimation</h3>
+          <p>Estimate distance and render floating labels above or beside the object.</p>
+        </article>
+        <article class="feature-card">
+          <span class="icon">◎</span>
+          <h3>Real Time Detection</h3>
+          <p>Detection boxes, scan pulses, and live status panels stay visually active.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel demo-panel reveal delay-2" id="demo">
+      <div class="section-head">
+        <p class="tiny-label">Interactive demo</p>
+        <h2>Camera, object marking, and measurement workspace</h2>
+      </div>
+
+      <div class="demo-stage">
+        <div class="viewport-shell">
+          <div class="viewport-head">
+            <div>
+              <p class="tiny-label">Camera viewport</p>
+              <h3 id="viewportTitle">Scan-ready scene</h3>
+            </div>
+            <span class="status-chip live">Live AI</span>
+          </div>
+
+          <label class="upload-button" for="imageInput">
+            <input id="imageInput" type="file" accept="image/*" capture="environment" hidden>
+            <span>Upload / Capture</span>
+          </label>
+          <div class="upload-meta">
+            <span>Selected frame</span>
+            <strong id="selectedFileLabel">No image selected yet</strong>
+          </div>
+
+          <div class="camera-frame" id="cameraFrame">
+            <div class="camera-placeholder" id="cameraPlaceholder">
+              <div class="placeholder-glow"></div>
+              <p>No image selected yet</p>
+              <span>Use the button above to load a frame</span>
+            </div>
+            <img id="previewImage" alt="Selected image preview" class="preview-image" hidden>
+            <div class="overlay overlay-grid"></div>
+            <div class="overlay overlay-scan"></div>
+            <div class="overlay reticle overlay-reticle"></div>
+            <div class="overlay overlay-box box-a"></div>
+            <div class="overlay overlay-box box-b"></div>
+            <div class="overlay label-chip label-above">Above label</div>
+            <div class="overlay label-chip label-side">Side label</div>
+          </div>
+
+          <div class="tool-bar">
+            <button class="tool-btn active" data-tool="box">Box</button>
+            <button class="tool-btn" data-tool="circle">Circle</button>
+            <button class="tool-btn" data-tool="polygon">Polygon</button>
+          </div>
+
+          <div class="action-grid">
+            <button class="ghost-btn" id="backToHomeBtn">Home</button>
+            <button class="ghost-btn" id="swapLabelBtn">Label: Above</button>
+            <button class="primary-btn" id="predictBtn">Predict</button>
+            <button class="ghost-btn" id="saveBtn">Save Label</button>
+          </div>
+        </div>
+
+        <aside class="analysis-panel">
+          <p class="tiny-label">AI analysis</p>
+          <h3>Side panel</h3>
+          <div class="analysis-card">
+            <div class="analysis-row"><span>Object confidence</span><strong>97.8%</strong></div>
+            <div class="progress-ring"><span>AI</span></div>
+            <div class="analysis-row"><span>Estimated distance</span><strong id="distanceValue">42.0 cm</strong></div>
+            <div class="analysis-row"><span>Model</span><strong>baseline-v0</strong></div>
+          </div>
+          <div class="analysis-card mini-status">
+            <div class="analysis-row"><span>Annotation status</span><strong id="annotationStatus">Ready</strong></div>
+            <div class="analysis-row"><span>Upload mode</span><strong id="uploadMode">Camera / File</strong></div>
+            <div class="analysis-row"><span>Prediction</span><strong id="resultValue">Distance: 42.0 cm</strong></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="panel timeline-panel reveal delay-1">
+      <div class="section-head">
+        <p class="tiny-label">How it works</p>
+        <h2>Fast futuristic workflow</h2>
+      </div>
+      <div class="timeline-list">
+        <div class="timeline-item"><span>01</span><div><h3>Capture</h3><p>Use camera or upload a frame.</p></div></div>
+        <div class="timeline-item"><span>02</span><div><h3>Mark</h3><p>Tap points or draw a box or polygon.</p></div></div>
+        <div class="timeline-item"><span>03</span><div><h3>Estimate</h3><p>AI calculates distance and overlays labels.</p></div></div>
+        <div class="timeline-item"><span>04</span><div><h3>Save</h3><p>Persist annotations and training labels.</p></div></div>
+      </div>
+    </section>
+
+    <section class="panel docs-panel reveal delay-2" id="docs">
+      <div class="section-head">
+        <p class="tiny-label">Docs / Use cases</p>
+        <h2>Robotics, surveying, smart vision</h2>
+      </div>
+      <div class="usecase-grid">
+        <article class="usecase-card"><h3>Robotics</h3><p>Guide autonomous systems with spatial awareness.</p></article>
+        <article class="usecase-card"><h3>Surveying</h3><p>Capture field distances with visual reference points.</p></article>
+        <article class="usecase-card"><h3>Smart Vision</h3><p>Turn camera scenes into measurable intelligence.</p></article>
+      </div>
+      <div class="cta-footer">
+        <h3>Launch a sci-fi measurement experience</h3>
+        <p>Combine camera capture, object annotations, AI overlays, and responsive distance labels into one dramatic interface.</p>
+        <div class="cta-row compact">
+          <button class="cta primary" id="openCameraAgainBtn">Launch Camera</button>
+          <a href="#demo" class="cta secondary">Try Demo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="#home" data-nav="home" class="bottom-nav-item active">Home</a>
+    <a href="#demo" data-nav="demo" class="bottom-nav-item">Demo</a>
+    <a href="#docs" data-nav="docs" class="bottom-nav-item">Docs</a>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>

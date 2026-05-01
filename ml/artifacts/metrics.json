@@ -1,0 +1,24 @@
+{
+  "mae_cm": 0.0,
+  "rmse_cm": 0.0,
+  "r2": null,
+  "rows": 1,
+  "eval_rows": 1,
+  "by_source": {
+    "mobile-camera": {
+      "rows": 1,
+      "mae_cm": 0.0,
+      "rmse_cm": 0.0,
+      "r2": null
+    }
+  },
+  "by_distance_band": {
+    "80_100_cm": {
+      "rows": 1,
+      "mae_cm": 0.0,
+      "rmse_cm": 0.0,
+      "r2": null
+    }
+  },
+  "created_at": "2026-04-26T11:33:32.857869+00:00"
+}

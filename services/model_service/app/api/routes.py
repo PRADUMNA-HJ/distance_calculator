@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -13,6 +15,7 @@ def active_model() -> dict:
     return {
         "model_name": "distance-regressor",
         "model_version": "baseline-v0",
+        "trained_on": datetime.now(timezone.utc).isoformat(),
         "framework": "pytorch",
     }
 

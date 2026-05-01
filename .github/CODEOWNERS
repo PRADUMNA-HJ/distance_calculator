@@ -2,7 +2,7 @@
 # Replace GitHub usernames after account setup.
 
 # Core contracts and architecture: both reviewers required manually
-/contracts/* @PRADUMNA-HJ @friend-github-username
+/contracts/* @PRADUMNA-HJ @Nagaraj-Shettar
 /shared/schemas/* @PRADUMNA-HJ @friend-github-username
 /docs/* @PRADUMNA-HJ @friend-github-username
 

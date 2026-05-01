@@ -36,3 +36,5 @@ ml/runs/
 # Data
 data/raw/
 data/processed/
+data/*.db
+services/*/data/*.db

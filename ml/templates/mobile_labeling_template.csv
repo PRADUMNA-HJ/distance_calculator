@@ -1,0 +1,6 @@
+image_id,image_uri,mark_type,box_x,box_y,box_width,box_height,polygon_points_json,true_distance_cm,source,analysis_mode,target_object_type,source_quality,distance_band,captured_at,device_id
+img_0001,data/mobile_images/img_0001.jpg,box,120,140,200,180,,18.5,mobile-camera,distance,car,original,0_20_cm,2026-04-26T08:00:00Z,phone_a
+img_0002,data/mobile_images/img_0002.jpg,box,110,135,195,176,,33.2,mobile-camera,depth,person,original,20_40_cm,2026-04-26T08:05:00Z,phone_a
+img_0003,data/mobile_images/img_0003.jpg,box,98,120,184,160,,47.6,mobile-camera,depth,mountain,original,40_60_cm,2026-04-26T08:10:00Z,phone_a
+img_0004,data/mobile_images/img_0004.jpg,box,92,112,178,154,,72.4,mobile-camera,size,logistics box,original,60_80_cm,2026-04-26T08:15:00Z,phone_a
+img_0005,data/mobile_images/img_0005.jpg,box,86,104,170,148,,94.1,mobile-camera,area,plot of land,original,80_100_cm,2026-04-26T08:20:00Z,phone_a

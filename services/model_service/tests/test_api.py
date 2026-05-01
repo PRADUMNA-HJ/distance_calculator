@@ -13,6 +13,7 @@ def test_active_model() -> None:
     response = client.get("/v1/model/active")
     assert response.status_code == 200
     assert "model_version" in response.json()
+    assert "trained_on" in response.json()
 
 
 def test_predict() -> None:

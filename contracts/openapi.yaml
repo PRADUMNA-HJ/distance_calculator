@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: Centralized API gateway contract for microservices-based distance platform.
 servers:
-  - url: http://localhost:8000/api
+  - url: http://localhost:8000
 paths:
   /health:
     get:
@@ -136,6 +136,11 @@ components:
         source:
           type: string
           enum: [kaggle, mobile-camera]
+        analysis_mode:
+          type: string
+          enum: [distance, depth, area, size]
+        target_object_type:
+          type: string
         captured_at:
           type: string
           format: date-time
@@ -160,6 +165,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Point"
+        analysis_mode:
+          type: string
+          enum: [distance, depth, area, size]
+        target_object_type:
+          type: string
       required: [image_uri, mark_type]
 
     PredictResponse:
@@ -195,6 +205,11 @@ components:
         source:
           type: string
           enum: [kaggle, mobile-camera]
+        analysis_mode:
+          type: string
+          enum: [distance, depth, area, size]
+        target_object_type:
+          type: string
         dataset_name:
           type: string
         version:

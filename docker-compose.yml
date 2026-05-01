@@ -9,11 +9,17 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8001
       ANNOTATION_SERVICE_URL: http://annotation-service:8002
       INFERENCE_SERVICE_URL: http://inference-orchestrator:8003
+      MODEL_SERVICE_URL: http://model-service:8004
       DATASET_SERVICE_URL: http://dataset-service:8005
+      GATEWAY_API_KEY: dev-gateway-key
+      UPLOAD_DIR: /app/data/uploads
+    volumes:
+      - ./data:/app/data
     depends_on:
       - auth-service
       - annotation-service
       - inference-orchestrator
+      - model-service
       - dataset-service
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
@@ -25,6 +31,8 @@ services:
     build: ./services/auth_service
     ports:
       - "8001:8001"
+    environment:
+      AUTH_BEARER_TOKEN: demo-token
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 20s
@@ -35,6 +43,10 @@ services:
     build: ./services/annotation_service
     ports:
       - "8002:8002"
+    environment:
+      DATABASE_PATH: /app/data/annotation_service.db
+    volumes:
+      - ./data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
       interval: 20s
@@ -69,6 +81,10 @@ services:
     build: ./services/dataset_service
     ports:
       - "8005:8005"
+    environment:
+      DATABASE_PATH: /app/data/dataset_service.db
+    volumes:
+      - ./data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health')"]
       interval: 20s

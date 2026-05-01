@@ -1,0 +1,4 @@
+image_id,image_uri,mark_type,box_x,box_y,box_width,box_height,polygon_points_json,true_distance_cm,source,analysis_mode,target_object_type,source_quality,distance_band,captured_at,device_id
+sample_0001,images/mobile/sample_0001.jpg,box,120,140,200,180,,18.5,mobile-camera,distance,box,original,0_20_cm,2026-04-19T09:00:00Z,phone_a
+sample_0002,images/mobile/sample_0002.jpg,box,80,100,160,140,,74.0,mobile-shared,depth,person,compressed,60_80_cm,2026-04-20T18:30:00Z,phone_a
+sample_0003,images/public/sample_0003.jpg,box,60,95,120,100,,265.0,kaggle,area,plot of land,original,100_300_cm,2026-04-21T12:10:00Z,kaggle_set_01
