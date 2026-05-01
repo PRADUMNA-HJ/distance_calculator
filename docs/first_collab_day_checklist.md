@@ -14,8 +14,8 @@
 - [ ] DATA-001 kaggle + mobile ingestion script
 
 ## First PR Pair
-- [ ] PR-1: frontend + gateway request path
-- [ ] PR-2: model_service baseline response contract
+- [x] PR-1: frontend + gateway request path
+- [x] PR-2: model_service baseline response contract
 
 ## End of Day
 - [ ] Run integration smoke workflow
