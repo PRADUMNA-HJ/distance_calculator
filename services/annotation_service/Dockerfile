@@ -1,6 +1,17 @@
 FROM python:3.11-slim
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+
 WORKDIR /app
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
 COPY app ./app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+
+# Data volume is mounted at runtime; ensure dir exists with correct perms
+RUN mkdir -p /app/data && chown appuser /app/data
+
+USER appuser
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002", "--workers", "1"]

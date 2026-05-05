@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React Canvas Prototype (Standalone)</title>
+  <!-- Load React, ReactDOM, and Babel for standalone in-browser compilation -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #fafafa; margin: 0; padding: 20px; }
+    .toolbar { display: flex; gap: 10px; padding: 10px; background: #eee; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    button { padding: 8px 16px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+    button:hover { background: #f0f0f0; }
+    button.active { font-weight: bold; background: #d0e8ff; border-color: #007bff; color: #0044aa; }
+    button.primary { background: #007bff; color: white; border: none; }
+    button.primary:hover { background: #0056b3; }
+    canvas { border: 1px solid #ccc; background: white; cursor: crosshair; touch-action: none; width: 100%; max-width: 600px; display: block; margin: 0 auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .status-bar { margin-top: 20px; padding: 10px; background: #e0ffe0; border-radius: 4px; font-weight: bold; color: #005a00; border: 1px solid #b3ffb3; }
+    .payload-view { margin-top: 10px; padding: 10px; background: #282c34; color: #abb2bf; font-size: 13px; border-radius: 4px; overflow-x: auto; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- Simulated API Service ---
+    const api = {
+      saveAnnotation: async (payload) => {
+        return new Promise(resolve => setTimeout(() => resolve({ success: true }), 500));
+      },
+      predictDistance: async (payload) => {
+        return new Promise(resolve => setTimeout(() => resolve({ distance_cm: 82.5 }), 800));
+      }
+    };
+
+    // --- Toolbar Component ---
+    function Toolbar({ tool, setTool, onPredict, onSave }) {
+      return (
+        <div className="toolbar">
+          <button className={tool === "box" ? "active" : ""} onClick={() => setTool("box")}>Box</button>
+          <button className={tool === "circle" ? "active" : ""} onClick={() => setTool("circle")}>Circle</button>
+          <button className={tool === "polygon" ? "active" : ""} onClick={() => setTool("polygon")}>Polygon</button>
+          <div style={{ flex: 1 }}></div>
+          <button className="primary" id="btn-predict" onClick={onPredict}>Predict Distance</button>
+          <button className="primary" id="btn-save" onClick={onSave}>Save</button>
+        </div>
+      );
+    }
+
+    // --- Canvas Component ---
+    function Canvas({ tool, onDrawComplete }) {
+      const canvasRef = useRef(null);
+      const [isDrawing, setIsDrawing] = useState(false);
+      const [startPos, setStartPos] = useState(null);
+      const [currentShape, setCurrentShape] = useState(null);
+      const [polygonPoints, setPolygonPoints] = useState([]);
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = "#f15b2a";
+        ctx.lineWidth = 2;
+
+        const drawShape = (shape) => {
+          if (!shape) return;
+          if (shape.type === "box") {
+            ctx.strokeRect(shape.x, shape.y, shape.w, shape.h);
+            ctx.fillStyle = "rgba(241, 91, 42, 0.1)";
+            ctx.fillRect(shape.x, shape.y, shape.w, shape.h);
+          } else if (shape.type === "circle") {
+            ctx.beginPath();
+            ctx.arc(shape.x, shape.y, shape.r, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = "rgba(241, 91, 42, 0.1)";
+            ctx.fill();
+          } else if (shape.type === "polygon" && shape.points.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(shape.points[0].x, shape.points[0].y);
+            shape.points.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+            if (shape.points.length > 2) {
+              ctx.fillStyle = "rgba(241, 91, 42, 0.1)";
+              ctx.fill();
+            }
+          }
+        };
+
+        drawShape(currentShape);
+        if (tool === "polygon" && polygonPoints.length > 0) {
+          drawShape({ type: "polygon", points: polygonPoints });
+        }
+      }, [currentShape, polygonPoints, tool]);
+
+      const getPos = (e) => {
+        const rect = canvasRef.current.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      };
+
+      const handlePointerDown = (e) => {
+        const pos = getPos(e);
+        if (tool === "polygon") {
+          const newPts = [...polygonPoints, pos];
+          setPolygonPoints(newPts);
+          if (newPts.length >= 3) onDrawComplete({ type: "polygon", points: newPts });
+        } else {
+          setIsDrawing(true);
+          setStartPos(pos);
+        }
+      };
+
+      const handlePointerMove = (e) => {
+        if (!isDrawing || tool === "polygon") return;
+        const pos = getPos(e);
+        if (tool === "box") {
+          setCurrentShape({ type: "box", x: startPos.x, y: startPos.y, w: pos.x - startPos.x, h: pos.y - startPos.y });
+        } else if (tool === "circle") {
+          setCurrentShape({ type: "circle", x: startPos.x, y: startPos.y, r: Math.hypot(pos.x - startPos.x, pos.y - startPos.y) });
+        }
+      };
+
+      const handlePointerUp = () => {
+        if (tool === "polygon") return;
+        setIsDrawing(false);
+        if (currentShape) {
+          // Normalize box coordinates before saving
+          if (currentShape.type === "box") {
+            const normBox = {
+              type: "box",
+              x: Math.min(startPos.x, currentShape.x + currentShape.w),
+              y: Math.min(startPos.y, currentShape.y + currentShape.h),
+              w: Math.abs(currentShape.w),
+              h: Math.abs(currentShape.h)
+            };
+            onDrawComplete(normBox);
+          } else {
+            onDrawComplete(currentShape);
+          }
+        }
+      };
+
+      return (
+        <canvas
+          id="main-canvas"
+          ref={canvasRef}
+          width={600}
+          height={400}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+        />
+      );
+    }
+
+    // --- App Component ---
+    function App() {
+      const [tool, setTool] = useState("box");
+      const [annotation, setAnnotation] = useState(null);
+      const [status, setStatus] = useState("Ready to draw!");
+
+      const handlePredict = async () => {
+        if (!annotation) return setStatus("Draw a shape first!");
+        setStatus("Predicting distance via API...");
+        try {
+          const res = await api.predictDistance(annotation);
+          setStatus(`✅ API Success! Predicted Distance: ${res.distance_cm} cm`);
+        } catch (e) {
+          setStatus("❌ Error connecting to backend.");
+        }
+      };
+
+      const handleSave = async () => {
+        if (!annotation) return setStatus("Draw a shape first!");
+        setStatus("Saving annotation via API...");
+        try {
+          await api.saveAnnotation(annotation);
+          setStatus("✅ API Success! Saved successfully!");
+        } catch (e) {
+          setStatus("❌ Error saving.");
+        }
+      };
+
+      return (
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <h2 style={{ color: "#333" }}>React Canvas (No Build Demo)</h2>
+          <Toolbar tool={tool} setTool={setTool} onPredict={handlePredict} onSave={handleSave} />
+          
+          <Canvas tool={tool} onDrawComplete={setAnnotation} />
+          
+          <div className="status-bar" id="status-bar">
+            {status}
+          </div>
+          
+          {annotation && (
+            <div style={{ marginTop: "20px" }}>
+              <div style={{ fontSize: "14px", fontWeight: "bold", color: "#555" }}>Current Annotation Payload:</div>
+              <pre className="payload-view">
+                {JSON.stringify(annotation, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

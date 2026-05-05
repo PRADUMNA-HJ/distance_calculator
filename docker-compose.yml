@@ -1,92 +1,143 @@
 version: "3.9"
 
+# Single named network for all services
+networks:
+  dc-net:
+    driver: bridge
+
 services:
   api-gateway:
-    build: ./services/api_gateway
+    build:
+      context: .
+      dockerfile: services/api_gateway/Dockerfile
     ports:
       - "8000:8000"
+    env_file: .env
     environment:
       AUTH_SERVICE_URL: http://auth-service:8001
       ANNOTATION_SERVICE_URL: http://annotation-service:8002
       INFERENCE_SERVICE_URL: http://inference-orchestrator:8003
       MODEL_SERVICE_URL: http://model-service:8004
       DATASET_SERVICE_URL: http://dataset-service:8005
-      GATEWAY_API_KEY: dev-gateway-key
+      GATEWAY_API_KEY: ${GATEWAY_API_KEY:-dev-gateway-key}
       UPLOAD_DIR: /app/data/uploads
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
     volumes:
       - ./data:/app/data
+    networks:
+      - dc-net
     depends_on:
-      - auth-service
-      - annotation-service
-      - inference-orchestrator
-      - model-service
-      - dataset-service
+      auth-service:
+        condition: service_healthy
+      annotation-service:
+        condition: service_healthy
+      inference-orchestrator:
+        condition: service_healthy
+      model-service:
+        condition: service_healthy
+      dataset-service:
+        condition: service_healthy
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 20s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   auth-service:
-    build: ./services/auth_service
+    build:
+      context: services/auth_service
     ports:
       - "8001:8001"
+    env_file: .env
     environment:
-      AUTH_BEARER_TOKEN: demo-token
+      AUTH_BEARER_TOKEN: ${AUTH_BEARER_TOKEN:-demo-token}
+    networks:
+      - dc-net
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 20s
       timeout: 5s
       retries: 5
+      start_period: 8s
 
   annotation-service:
-    build: ./services/annotation_service
+    build:
+      context: services/annotation_service
     ports:
       - "8002:8002"
+    env_file: .env
     environment:
       DATABASE_PATH: /app/data/annotation_service.db
     volumes:
       - ./data:/app/data
+    networks:
+      - dc-net
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
       interval: 20s
       timeout: 5s
       retries: 5
+      start_period: 8s
 
   inference-orchestrator:
-    build: ./services/inference_orchestrator
+    build:
+      context: services/inference_orchestrator
     ports:
       - "8003:8003"
+    env_file: .env
     environment:
       MODEL_SERVICE_URL: http://model-service:8004
+    networks:
+      - dc-net
     depends_on:
-      - model-service
+      model-service:
+        condition: service_healthy
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
       interval: 20s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   model-service:
-    build: ./services/model_service
+    build:
+      context: .
+      dockerfile: services/model_service/Dockerfile
     ports:
       - "8004:8004"
+    env_file: .env
+    networks:
+      - dc-net
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
       interval: 20s
       timeout: 5s
       retries: 5
+      start_period: 15s
 
   dataset-service:
-    build: ./services/dataset_service
+    build:
+      context: services/dataset_service
     ports:
       - "8005:8005"
+    env_file: .env
     environment:
       DATABASE_PATH: /app/data/dataset_service.db
     volumes:
       - ./data:/app/data
+    networks:
+      - dc-net
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health')"]
       interval: 20s
       timeout: 5s
       retries: 5
+      start_period: 8s

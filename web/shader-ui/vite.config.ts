@@ -8,5 +8,22 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src")
     }
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      // During dev, forward all /api requests to the running gateway
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        secure: false
+      },
+      "/health": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 });
+

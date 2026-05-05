@@ -1,3 +1,6 @@
+// ──────────────────────────────────────────────────────────────────────────────
+// Types
+// ──────────────────────────────────────────────────────────────────────────────
 export type SystemHealthResponse = {
   service: string;
   status: string;
@@ -35,8 +38,19 @@ export type DatasetIngestPayload = {
   notes?: string | null;
 };
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Internals
+// ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * In dev, Vite proxies /api/* → localhost:8000, so gatewayUrl can be "".
+ * In production, set VITE_API_BASE_URL to the real gateway origin.
+ */
+export const DEFAULT_GATEWAY_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "";
+
 function normalizeGatewayUrl(gatewayUrl: string): string {
-  return gatewayUrl.trim().replace(/\/$/, "");
+  return (gatewayUrl || DEFAULT_GATEWAY_URL).trim().replace(/\/$/, "");
 }
 
 function buildHeaders(apiKey: string, bearerToken: string): HeadersInit {
@@ -46,6 +60,7 @@ function buildHeaders(apiKey: string, bearerToken: string): HeadersInit {
     Authorization: `Bearer ${bearerToken.trim()}`
   };
 }
+
 
 export async function fetchSystemHealth(gatewayUrl: string): Promise<SystemHealthResponse> {
   const response = await fetch(`${normalizeGatewayUrl(gatewayUrl)}/api/v1/system/health`);

@@ -4,12 +4,17 @@ import {
   ArrowRight,
   Camera,
   CheckCircle2,
+  Check,
   DatabaseZap,
   Gauge,
   ImageUp,
   Layers3,
   Save,
-  Upload
+  Trash2,
+  Upload,
+  Circle,
+  Square,
+  Pentagon
 } from "lucide-react";
 
 import {
@@ -18,9 +23,11 @@ import {
   predictDistance,
   saveAnnotation,
   type BackendFormState,
-  type PredictResponse
+  type PredictResponse,
+  type AnnotationPayload
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { Canvas, type Annotation } from "./canvas";
 
 const defaultForm: BackendFormState = {
   gatewayUrl: "http://localhost:8000",
@@ -36,9 +43,10 @@ function BackendConsole() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageName, setImageName] = useState("demo/image-001.jpg");
   const [imageSource, setImageSource] = useState("Demo asset");
-  const [markType, setMarkType] = useState<"box" | "polygon">("box");
+  const [markType, setMarkType] = useState<"box" | "circle" | "polygon">("box");
+  const [activeAnnotation, setActiveAnnotation] = useState<Annotation | null>(null);
   const [labelPlacement, setLabelPlacement] = useState<"above" | "side">("above");
-  const [trueDistanceCm, setTrueDistanceCm] = useState("42");
+  const [trueDistanceCm, setTrueDistanceCm] = useState("85");
   const [statusMessage, setStatusMessage] = useState("Ready to call the gateway.");
   const [prediction, setPrediction] = useState<PredictResponse | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -48,24 +56,13 @@ function BackendConsole() {
     () => ({
       image_id: imageId,
       image_uri: imageUri,
-      mark_type: markType,
-      true_distance_cm: Number(trueDistanceCm) || 42,
+      mark_type: activeAnnotation?.mark_type || markType,
+      true_distance_cm: Number(trueDistanceCm) || 85,
       source: "web-ui",
-      box:
-        markType === "box"
-          ? { x: 120, y: 90, width: 240, height: 180 }
-          : null,
-      polygon:
-        markType === "polygon"
-          ? [
-              { x: 115, y: 95 },
-              { x: 340, y: 86 },
-              { x: 345, y: 244 },
-              { x: 140, y: 250 }
-            ]
-          : null
+      box: activeAnnotation?.box || null,
+      polygon: activeAnnotation?.polygon || null
     }),
-    [imageId, imageUri, markType, trueDistanceCm]
+    [imageId, imageUri, activeAnnotation, markType, trueDistanceCm]
   );
 
   const setField = (key: keyof BackendFormState, value: string) => {
@@ -89,6 +86,8 @@ function BackendConsole() {
     setImageSource(file.webkitRelativePath ? `Local file: ${file.webkitRelativePath}` : "Captured or uploaded image");
     setImageId(file.name.replace(/\.[^.]+$/, "") || "img-upload");
     setStatusMessage(`Loaded image: ${file.name}`);
+    setActiveAnnotation(null);
+    setPrediction(null);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,13 +105,39 @@ function BackendConsole() {
     try {
       const result = await runner();
       setStatusMessage(`${action} succeeded.`);
-      if (action === "Predict") {
+      // action key is lower-case snake for easy comparison
+      if (action === "predict") {
         setPrediction(result as PredictResponse);
       }
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : `${action} failed.`);
+      const msg = error instanceof Error ? error.message : `${action} failed.`;
+      setStatusMessage(`⚠️ ${msg}`);
+      console.error(`[BackendConsole] ${action} failed:`, error);
     } finally {
       setLoadingAction(null);
+    }
+  };
+
+  const finalizePolygon = () => {
+    if (!activeAnnotation || activeAnnotation.mark_type !== "polygon") return;
+    const pts = activeAnnotation.polygon ?? [];
+    if (pts.length < 3) {
+      setStatusMessage("⚠️ Polygon needs at least 3 points.");
+      return;
+    }
+    setStatusMessage(`Polygon finalised with ${pts.length} points.`);
+  };
+
+  const clearAnnotation = () => {
+    setActiveAnnotation(null);
+    setPrediction(null);
+    setStatusMessage("Annotation cleared.");
+  };
+
+  const handleAnnotationChange = (annotation: Annotation | null) => {
+    setActiveAnnotation(annotation);
+    if (annotation) {
+        setMarkType(annotation.mark_type);
     }
   };
 
@@ -198,32 +223,58 @@ function BackendConsole() {
                 Use Demo Frame
               </Button>
             </div>
-            <div className="mt-4 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black/35">
-                {imagePreviewUrl ? (
-                  <img src={imagePreviewUrl} alt="Selected image preview" className="h-52 w-full object-cover" />
-                ) : (
-                  <div className="grid h-52 place-items-center text-sm text-slate-400">No image selected yet</div>
-                )}
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-black/25 p-4 text-sm text-slate-300">
-                <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-                  <span>Image name</span>
-                  <span className="font-semibold text-white">{imageName}</span>
+
+            <div className="mt-5 rounded-[22px] border border-white/10 bg-black/25 p-4">
+                <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3">
+                    <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/80">Annotation Workspace</p>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className={`h-8 w-8 p-0 ${markType === 'box' ? 'bg-cyan-500/20 text-cyan-200' : ''}`} onClick={() => setMarkType('box')} title="Box tool"><Square className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="sm" className={`h-8 w-8 p-0 ${markType === 'circle' ? 'bg-cyan-500/20 text-cyan-200' : ''}`} onClick={() => setMarkType('circle')} title="Circle tool"><Circle className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="sm" className={`h-8 w-8 p-0 ${markType === 'polygon' ? 'bg-cyan-500/20 text-cyan-200' : ''}`} onClick={() => setMarkType('polygon')} title="Polygon (click to place points)"><Pentagon className="h-4 w-4" /></Button>
+                        {markType === 'polygon' && (
+                          <Button variant="outline" size="sm" className="h-8 px-2 text-xs text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10" onClick={finalizePolygon} title="Finalize polygon">
+                            <Check className="mr-1 h-3 w-3" />Done
+                          </Button>
+                        )}
+                        <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-red-400 border-red-500/30 hover:bg-red-500/10" onClick={clearAnnotation} title="Clear annotation"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-                  <span>Backend URI</span>
-                  <span className="max-w-[220px] truncate font-semibold text-white">{imageUri}</span>
+                <div className="mt-4 relative overflow-hidden rounded-[22px] border border-white/10 bg-black/35 h-[400px]">
+                    <Canvas 
+                        selectedFile={selectedFile} 
+                        tool={markType} 
+                        onAnnotationChange={handleAnnotationChange}
+                        predictedLabelPosition={prediction?.label_position}
+                        predictionText={prediction ? `${prediction.distance_cm} cm` : null}
+                    />
+                    {!selectedFile && (
+                        <div className="absolute inset-0 grid place-items-center text-sm text-slate-400">
+                            Upload an image to start annotating
+                        </div>
+                    )}
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <span>Source</span>
-                  <span className="font-semibold text-white">{imageSource}</span>
-                </div>
-              </div>
             </div>
-            <p className="mt-3 text-xs leading-6 text-slate-400">
-              The backend currently accepts image URIs, so the selected file is captured locally, previewed in the browser, and converted to a demo URI for gateway requests.
-            </p>
+
+            <div className="mt-4 rounded-[22px] border border-white/10 bg-black/25 p-4 text-sm text-slate-300">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <span>Image name</span>
+                        <span className="font-semibold text-white truncate max-w-[120px]">{imageName}</span>
+                    </div>
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <span>Backend URI</span>
+                        <span className="font-semibold text-white truncate max-w-[120px]">{imageUri}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span>Source</span>
+                        <span className="font-semibold text-white truncate max-w-[120px]">{imageSource}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span>Annotation</span>
+                        <span className="font-semibold text-white">{activeAnnotation ? 'Ready' : 'None'}</span>
+                    </div>
+                </div>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -236,29 +287,21 @@ function BackendConsole() {
             </Button>
             <Button
               variant="outline"
-              className="border-white/20 bg-white/5 text-white hover:bg-white/10"
-                onClick={() => callAction("Predict", () => predictDistance(form, {
-                image_uri: imageUri,
-                mark_type: markType,
-                box: markType === "box" ? { x: 120, y: 90, width: 240, height: 180 } : undefined,
-                polygon:
-                  markType === "polygon"
-                    ? [
-                        { x: 115, y: 95 },
-                        { x: 340, y: 86 },
-                        { x: 345, y: 244 },
-                        { x: 140, y: 250 }
-                      ]
-                    : undefined
-              }, selectedFile))}
+              className="border-white/20 bg-white/5 text-white hover:bg-white/10 disabled:opacity-40"
+                onClick={() => callAction("predict", () => {
+                    const { true_distance_cm, source, image_id, ...payload } = annotationPayload;
+                    return predictDistance(form, payload, selectedFile);
+                })}
+                disabled={!activeAnnotation}
             >
               <Gauge className="mr-2 h-4 w-4" />
-              Predict Distance
+              {loadingAction === "predict" ? "Predicting…" : "Predict Distance"}
             </Button>
             <Button
               variant="outline"
               className="border-white/20 bg-white/5 text-white hover:bg-white/10"
-              onClick={() => callAction("Save annotation", () => saveAnnotation(form, annotationPayload))}
+              onClick={() => callAction("Save annotation", () => saveAnnotation(form, annotationPayload as AnnotationPayload))}
+              disabled={!activeAnnotation}
             >
               <Save className="mr-2 h-4 w-4" />
               Save Annotation
@@ -311,8 +354,8 @@ function BackendConsole() {
               <span className="font-semibold text-white">{imageId}</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-              <span>Image source</span>
-              <span className="font-semibold text-white">{imageSource}</span>
+              <span>Annotation state</span>
+              <span className="font-semibold text-white">{activeAnnotation ? "Defined" : "Empty"}</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
               <span>Upload mode</span>
@@ -334,7 +377,7 @@ function BackendConsole() {
                 <div className="flex items-center justify-between"><span>Distance</span><span className="font-semibold text-white">{prediction.distance_cm} cm</span></div>
                 <div className="flex items-center justify-between"><span>Confidence</span><span className="font-semibold text-white">{prediction.confidence}</span></div>
                 <div className="flex items-center justify-between"><span>Model</span><span className="font-semibold text-white">{prediction.model_version}</span></div>
-                <div className="flex items-center justify-between"><span>Label x/y</span><span className="font-semibold text-white">{prediction.label_position.x}, {prediction.label_position.y}</span></div>
+                <div className="flex items-center justify-between"><span>Label x/y</span><span className="font-semibold text-white">{Math.round(prediction.label_position.x)}, {Math.round(prediction.label_position.y)}</span></div>
               </div>
             ) : (
               <p className="text-sm leading-7 text-slate-400">Run prediction to display the API response here.</p>
@@ -342,7 +385,7 @@ function BackendConsole() {
           </div>
         </div>
 
-        <Button className="mt-5 w-full bg-gradient-to-r from-cyan-400 via-teal-400 to-fuchsia-500 text-slate-950">
+        <Button className="mt-5 w-full bg-gradient-to-r from-cyan-400 via-teal-400 to-fuchsia-500 text-slate-950" onClick={() => callAction("Push", () => saveAnnotation(form, annotationPayload as AnnotationPayload))}>
           <ArrowRight className="mr-2 h-4 w-4" />
           Push to Gateway
         </Button>
@@ -352,3 +395,4 @@ function BackendConsole() {
 }
 
 export { BackendConsole };
+
