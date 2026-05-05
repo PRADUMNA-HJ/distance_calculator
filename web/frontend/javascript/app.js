@@ -33,14 +33,11 @@ const clearAnnotationBtn = document.getElementById('clearAnnotationBtn');
 const annotationMeta = document.getElementById('annotationMeta');
 const labelMeta = document.getElementById('labelMeta');
 const requestMeta = document.getElementById('requestMeta');
-const splashScreen = document.getElementById('splashScreen');
-const splashProgress = document.getElementById('splashProgress');
-const splashPercent = document.getElementById('splashPercent');
 
 const THEME_KEY = 'dc-theme';
 const HEALTH_REFRESH_INTERVAL_MS = 20000;
 let healthRefreshTimerId = null;
-const canvasContext = annotationCanvas ? annotationCanvas.getContext('2d') : null;
+let canvasContext = null;
 
 let imageBitmap = null;
 let selectedTool = 'box';
@@ -51,7 +48,6 @@ let selectedBox = null;
 let selectedPolygon = [];
 let draftPolygon = [];
 let predictedLabelPosition = null;
-let splashProgressValue = 0;
 
 function generateRequestId() {
   if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -120,26 +116,6 @@ function showToast(message, variant = 'info') {
   window.setTimeout(() => {
     toast.remove();
   }, 2800);
-}
-
-function runSplashSequence() {
-  const duration = 750;
-  const interval = 25;
-  const step = 100 / (duration / interval);
-
-  const splashTimer = window.setInterval(() => {
-    splashProgressValue = Math.min(100, splashProgressValue + step);
-    splashProgress.style.width = `${splashProgressValue}%`;
-    splashPercent.textContent = `${Math.round(splashProgressValue)}%`;
-
-    if (splashProgressValue >= 100) {
-      window.clearInterval(splashTimer);
-      splashScreen.classList.add('is-hidden');
-      window.setTimeout(() => {
-        splashScreen.style.display = 'none';
-      }, 220);
-    }
-  }, interval);
 }
 
 function renderServiceChip(name, status) {
@@ -292,8 +268,8 @@ if (requestIdInput) {
 if (requestMeta) {
   setRequestMeta(requestIdInput?.value || generateRequestId(), 'ready');
 }
-if (document.body.dataset.measurementMode !== undefined) {
-  setMeasurementMode('distance');
+if (document.body.dataset.mode) {
+  setMeasurementMode(document.body.dataset.mode);
 }
 if (typeof refreshSystemHealth === 'function' && overallStatus) {
   refreshSystemHealth(false);
@@ -329,6 +305,12 @@ async function runPrediction(mode) {
   predictDistanceBtn.disabled = true;
   predictAreaBtn.disabled = true;
   setResult('Calling API...', 'loading');
+  
+  // Add a visual loading overlay to the preview card
+  if (previewCard) {
+    previewCard.style.opacity = '0.5';
+    previewCard.style.pointerEvents = 'none';
+  }
 
   const annotation = annotationPayload();
   if (!annotation) {
@@ -336,6 +318,10 @@ async function runPrediction(mode) {
     showToast('Create a shape before prediction.', 'error');
     predictDistanceBtn.disabled = false;
     predictAreaBtn.disabled = false;
+    if (previewCard) {
+      previewCard.style.opacity = '1';
+      previewCard.style.pointerEvents = 'auto';
+    }
     return;
   }
 
@@ -358,8 +344,13 @@ async function runPrediction(mode) {
     });
 
     if (!response.ok) {
-      setResult(`Request failed with status ${response.status}`, 'error');
-      showToast(`Prediction failed (${response.status}).`, 'error');
+      let errorDetail = `Status ${response.status}`;
+      try {
+         const errJson = await response.json();
+         if (errJson.detail) errorDetail = errJson.detail;
+      } catch (e) {}
+      setResult(`Prediction failed: ${errorDetail}`, 'error');
+      showToast(`Prediction failed: ${errorDetail}`, 'error');
       return;
     }
 
@@ -383,13 +374,10 @@ async function runPrediction(mode) {
   } finally {
     predictDistanceBtn.disabled = false;
     predictAreaBtn.disabled = false;
-  }
-}
-
-function setTool(tool) {
-  selectedTool = tool;
-  toolBoxBtn.classList.toggle('is-active', tool === 'box');
-  toolCircleBtn.classList.toggle('is-active', tool === 'circle');
+    if (previewCard) {
+      previewCard.style.opacity = '1';
+      previewCard.style.pointerEvents = 'auto';
+    }
   toolPolygonBtn.classList.toggle('is-active', tool === 'polygon');
   draftShape = null;
   isDrawing = false;
@@ -455,20 +443,62 @@ function drawLabelIndicator() {
     return;
   }
 
+  // Draw the anchor dot
   canvasContext.fillStyle = '#f15b2a';
   canvasContext.beginPath();
   canvasContext.arc(predictedLabelPosition.x, predictedLabelPosition.y, 5, 0, Math.PI * 2);
   canvasContext.fill();
+
+  // Draw the prediction text overlay if available
+  const resultStr = resultText ? resultText.textContent : '';
+  if (resultStr && resultStr.includes('confidence')) {
+    // Extract just the measurement part (Distance: XX cm or Area: XX cm²)
+    const textPart = resultStr.split('(')[0].trim();
+    
+    // Render an elegant semi-transparent pill behind the label text
+    canvasContext.font = 'bold 16px "SF Pro Display", -apple-system, sans-serif';
+    const textMetrics = canvasContext.measureText(textPart);
+    const boxWidth = textMetrics.width + 16;
+    const boxHeight = 28;
+    
+    // Position slightly above the anchor dot
+    const boxX = predictedLabelPosition.x - (boxWidth / 2);
+    const boxY = predictedLabelPosition.y - 35;
+    
+    canvasContext.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    canvasContext.beginPath();
+    canvasContext.roundRect(boxX, boxY, boxWidth, boxHeight, 6);
+    canvasContext.fill();
+    
+    // Draw the white text
+    canvasContext.fillStyle = '#ffffff';
+    canvasContext.textAlign = 'center';
+    canvasContext.textBaseline = 'middle';
+    canvasContext.fillText(textPart, predictedLabelPosition.x, boxY + (boxHeight / 2));
+    
+    // Draw a small connector line
+    canvasContext.strokeStyle = '#f15b2a';
+    canvasContext.lineWidth = 2;
+    canvasContext.beginPath();
+    canvasContext.moveTo(predictedLabelPosition.x, predictedLabelPosition.y - 5);
+    canvasContext.lineTo(predictedLabelPosition.x, boxY + boxHeight);
+    canvasContext.stroke();
+  }
 }
 
 function drawCanvas() {
-  if (!canvasContext || !annotationCanvas) {
+  if (!annotationCanvas) {
     return;
   }
   const rect = annotationCanvas.getBoundingClientRect();
   if (rect.width > 0 && rect.height > 0) {
     annotationCanvas.width = Math.round(rect.width);
     annotationCanvas.height = Math.round(rect.height);
+  }
+
+  canvasContext = annotationCanvas.getContext('2d');
+  if (!canvasContext) {
+    return;
   }
 
   canvasContext.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);

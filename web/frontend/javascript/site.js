@@ -194,45 +194,6 @@ function initDashboard() {
 
   currentSessionChip();
   refreshDashboardHealth();
-
-  // Show splash screen on first dashboard visit
-  runDashboardSplash();
-}
-
-function runDashboardSplash() {
-  const SPLASH_SHOWN_KEY = 'dc-splash-shown';
-  const splashShown = localStorage.getItem(SPLASH_SHOWN_KEY);
-  
-  if (!splashShown) {
-    const splashScreen = $('splashScreen');
-    const splashProgress = $('splashProgress');
-    const splashPercent = $('splashPercent');
-    
-    if (splashScreen && splashProgress && splashPercent) {
-      // Mark splash as shown
-      localStorage.setItem(SPLASH_SHOWN_KEY, 'true');
-      
-      // Run splash animation
-      const duration = 750;
-      const interval = 25;
-      let progressValue = 0;
-      const step = 100 / (duration / interval);
-      
-      const splashTimer = window.setInterval(() => {
-        progressValue = Math.min(100, progressValue + step);
-        splashProgress.style.width = `${progressValue}%`;
-        splashPercent.textContent = `${Math.round(progressValue)}%`;
-        
-        if (progressValue >= 100) {
-          window.clearInterval(splashTimer);
-          splashScreen.classList.add('is-hidden');
-          window.setTimeout(() => {
-            splashScreen.style.display = 'none';
-          }, 220);
-        }
-      }, interval);
-    }
-  }
 }
 
 function initLogin() {
